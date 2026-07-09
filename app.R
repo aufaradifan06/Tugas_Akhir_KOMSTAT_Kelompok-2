@@ -29,8 +29,66 @@ data_default <- data.frame(
 )
 
 # ############################################################
+# FUNGSI UI & SERVER — RIZKI (Tab Informasi Dataset)
+# ui_dataset_sidebar(), ui_dataset(),server_dataset()
+# ############################################################
+ui_dataset_sidebar <- function() {
+  box(
+    title = "📁 Input Data Anda", width = 12, solidHeader = TRUE,
+    class = "kotak-input-kustom",
+    fileInput("file_user", "Upload File CSV:", accept = c(".csv")),
+    checkboxInput("header_csv", "Baris Pertama adalah Header", TRUE),
+    uiOutput("pilih_kolom_x"),
+    uiOutput("pilih_kolom_y")
+  )
+}
+
+ui_dataset <- function() {
+  fluidRow(
+    box(title = "Informasi & Tampilan Data", width = 12, status = "danger", solidHeader = TRUE,
+        p("Gunakan menu di sebelah kiri untuk mengunggah dataset CSV Anda sendiri. Jika kosong, sistem akan menggunakan data default maskapai penerbangan."),
+        hr(),
+        DTOutput("tabel_asli")
+    )
+  )
+}
+
+# Fungsi ini mengembalikan (return) reactive data_proses,
+# karena dipake oleh fungsi Adiana & Aufar di bawah
+# JANGAN ubah nama fungsi ini atau apa yang di-return
+server_dataset <- function(input, output, session) {
+  data_aktif <- reactive({
+    if (is.null(input$file_user)) return(data_default)
+    read.csv(input$file_user$datapath, header = input$header_csv, stringsAsFactors = FALSE)
+  })
+  
+  output$pilih_kolom_x <- renderUI({
+    selectInput("kolom_x", "Pilih Kolom Waktu/Bulan:", choices = colnames(data_aktif()), selected = colnames(data_aktif())[1])
+  })
+  
+  output$pilih_kolom_y <- renderUI({
+    selectInput("kolom_y", "Pilih Kolom Nilai (Y):", choices = colnames(data_aktif()), selected = colnames(data_aktif())[3])
+  })
+  
+  data_proses <- reactive({
+    req(input$kolom_x, input$kolom_y)
+    df <- data_aktif()
+    data.frame(
+      Waktu = 1:nrow(df),
+      Label_Waktu = as.character(df[[input$kolom_x]]),
+      Penumpang = as.numeric(gsub(",", "", df[[input$kolom_y]]))
+    )
+  })
+  
+  output$tabel_asli <- renderDT({ data_proses()[, c("Label_Waktu", "Penumpang")] }, options = list(pageLength = 5))
+  
+  return(data_proses)   #JANGAN DIHAPUS
+}
+
+
+# ############################################################
 # FUNGSI UI & SERVER — AUFAR (Tab Peramalan MA)
-# HANYA EDIT DI DALAM ui_peramalan() DAN server_peramalan() INI SAJA
+# ui_peramalan() & server_peramalan()
 # ############################################################
 ui_peramalan <- function() {
   tagList(
@@ -59,8 +117,8 @@ ui_peramalan <- function() {
   )
 }
 
-# Parameter data_proses dari server_dataset() milik Rizki.
-# Fungsi ini WAJIB mengembalikan reactive data_final_ma, dipakai fungsi milik Maulana.
+#parameter data_proses dari server_dataset() rizki.
+#fungsi ini mengembalikan reactive data_final_ma, dipakai fungsi maulana.
 server_peramalan <- function(input, output, session, data_proses) {
   data_final_ma <- reactive({
     df <- data_proses()
@@ -118,5 +176,5 @@ server_peramalan <- function(input, output, session, data_proses) {
   
   output$tabel_hasil <- renderDT({ data_final_ma()[, c("Label_Waktu", "Penumpang", "MA_Hasil")] }, options = list(pageLength = 5))
   
-  return(data_final_ma)   # <- JANGAN DIHAPUS, dipakai fungsi lain
+  return(data_final_ma)   #JANGAN DIHAPUS
 }
