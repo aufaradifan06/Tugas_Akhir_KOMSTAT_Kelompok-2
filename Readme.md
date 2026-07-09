@@ -2,9 +2,6 @@
 
 Aplikasi interaktif berbasis **R Shiny** untuk analisis tren dan peramalan data deret waktu menggunakan metode **Simple Moving Average (SMA)**. Dikembangkan untuk memenuhi Tugas Akhir Mata Kuliah Komputasi Statistika.
 
-## 🔗 Repository
-`https://github.com/aufaradifan06/<nama-repo-baru>`
-
 ## 👥 Anggota Kelompok
 
 | Nama | NIM | Branch |
