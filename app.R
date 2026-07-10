@@ -85,6 +85,39 @@ server_dataset <- function(input, output, session) {
   return(data_proses)   #JANGAN DIHAPUS
 }
 
+# ############################################################
+# FUNGSI UI & SERVER — ADIANA (Tab Eksplorasi Tren)
+# HANYA EDIT DI DALAM ui_eksplorasi() DAN server_eksplorasi() INI SAJA
+# ############################################################
+ui_eksplorasi <- function() {
+  tagList(
+    fluidRow(
+      box(title = "Visualisasi Tren Pertumbuhan Data Aktual", width = 12, status = "warning", solidHeader = TRUE,
+          plotOutput("plot_asli")
+      )
+    ),
+    fluidRow(
+      box(title = "Ringkasan Statistik Deskriptif", width = 12, status = "danger", solidHeader = TRUE,
+          verbatimTextOutput("summary_stat")
+      )
+    )
+  )
+}
+
+# Parameter data_proses dikirim dari server_dataset() milik Rizki — jangan diubah urutan/nama parameter
+server_eksplorasi <- function(input, output, session, data_proses) {
+  output$summary_stat <- renderPrint({ summary(data_proses()$Penumpang) })
+  
+  output$plot_asli <- renderPlot({
+    df <- data_proses()
+    ggplot(df, aes(x = Waktu, y = Penumpang)) +
+      geom_line(color = "#e67e22", size = 1) +
+      geom_point(color = "#c0392b", size = 2) +
+      scale_x_continuous(breaks = seq(1, nrow(df), length.out = 10), labels = df$Label_Waktu[seq(1, nrow(df), length.out = 10)]) +
+      theme_minimal(base_size = 14) +
+      labs(x = "Periode Waktu", y = "Nilai Aktual")
+  })
+}
 
 # ############################################################
 # FUNGSI UI & SERVER — AUFAR (Tab Peramalan MA)
