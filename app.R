@@ -212,6 +212,73 @@ server_peramalan <- function(input, output, session, data_proses) {
   return(data_final_ma)   #JANGAN DIHAPUS
 }
 # ############################################################
+# FUNGSI UI & SERVER — MAULANA (Tab Diagnostik Model)
+# ############################################################
+ui_diagnostik <- function() {
+  tagList(
+    fluidRow(
+      box(title = "Distribusi Sisaan (Histogram)", width = 6, status = "warning", solidHeader = TRUE,
+          plotOutput("plot_hist_resid")
+      ),
+      box(title = "Uji Autokorelasi (Plot ACF)", width = 6, status = "danger", solidHeader = TRUE,
+          plotOutput("plot_acf_resid")
+      )
+    ),
+    fluidRow(
+      box(title = "Hasil Uji Statistik Formal & Asisten Sistem", width = 12, status = "warning", solidHeader = TRUE,
+          verbatimTextOutput("uji_formal_resid"),
+          hr(),
+          uiOutput("kesimpulan_diagnostik")
+      )
+    )
+  )
+}
+
+# Parameter data_final_ma dari server_peramalan() milik Aufar — jangan ubah nama/urutan parameter
+server_diagnostik <- function(input, output, session, data_final_ma) {
+  residual_data <- reactive({
+    df <- subset(data_final_ma(), !is.na(Penumpang))
+    na.omit(df$Penumpang - df$MA_Hasil)
+  })
+  
+  output$plot_hist_resid <- renderPlot({
+    ggplot(data.frame(err = residual_data()), aes(x = err)) +
+      geom_histogram(fill = "#f39c12", color = "white", bins = 20) +
+      geom_vline(xintercept = 0, linetype = "dashed", size = 1, color = "#c0392b") +
+      theme_minimal() + labs(x = "Sisaan (Residual)", y = "Frekuensi")
+  })
+  
+  output$plot_acf_resid <- renderPlot({
+    ggAcf(residual_data()) + theme_minimal() + labs(title = "")
+  })
+  
+  output$uji_formal_resid <- renderPrint({
+    cat("--- 1. UJI NORMALITAS (SHAPIRO-WILK) ---\n")
+    print(shapiro.test(residual_data()))
+    cat("\n--- 2. UJI AUTOKORELASI (LJUNG-BOX) ---\n")
+    print(Box.test(residual_data(), type = "Ljung-Box"))
+  })
+  
+  output$kesimpulan_diagnostik <- renderUI({
+    p_norm <- shapiro.test(residual_data())$p.value
+    p_ljung <- Box.test(residual_data(), type = "Ljung-Box")$p.value
+    
+    teks_norm <- ifelse(p_norm > 0.05, "<span style='color:green'><b>Normal</b> (Memenuhi Asumsi)</span>", "<span style='color:red'><b>Tidak Normal</b> (Asumsi Dilanggar)</span>")
+    teks_ljung <- ifelse(p_ljung > 0.05, "<span style='color:green'><b>Saling Bebas</b> (Memenuhi Asumsi)</span>", "<span style='color:red'><b>Ada Autokorelasi</b> (Asumsi Dilanggar)</span>")
+    
+    HTML(paste0(
+      "<div style='background-color:#fff3e0; padding:15px; border-radius:5px;'>",
+      "<h4>🧠 Asisten Kesimpulan Otomatis:</h4>",
+      "<ul>",
+      "<li><b>Distribusi Residual:</b> ", teks_norm, "</li>",
+      "<li><b>Autokorelasi Residual:</b> ", teks_ljung, "</li>",
+      "</ul>",
+      "<i>Catatan: Model peramalan yang sangat baik harusnya memiliki residual yang Normal dan Saling Bebas (p-value > 0.05). Jika dilanggar, metode ini (SMA) mungkin kurang cocok untuk kerumitan data tersebut.</i>",
+      "</div>"
+    ))
+  })
+}
+# ############################################################
 # UI UTAMA & SERVER UTAMA — RAIHAN
 # HANYA RAIHAN YANG BOLEH EDIT BAGIAN INI (integrasi & layout global)
 # ############################################################
