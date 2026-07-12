@@ -29,6 +29,49 @@ data_default <- data.frame(
 )
 
 # ############################################################
+# FUNGSI UI — SALWA (Tab Beranda)
+# HANYA EDIT DI DALAM ui_beranda() INI SAJA
+# ############################################################
+ui_beranda <- function() {
+  tagList(
+    fluidRow(
+      box(title = "       Selamat Datang      ", width = 12, status = "danger", solidHeader = TRUE,
+          h3(strong("Aplikasi Peramalan Menggunakan Simple Moving Average (SMA)"),
+             style = "text-align:center; color:#c0392b;"),
+          p("Aplikasi interaktif ini dikembangkan untuk memenuhi Tugas Akhir Mata Kuliah Komputasi Statistika. Aplikasi ini memungkinkan pengguna untuk melakukan analisis tren dan peramalan data deret waktu secara real-time.",
+            style = "text-align:center; font-size:16px;"),
+          hr(),
+          h4(icon("users", class = "text-danger"), strong("Anggota Tim:")),
+          tags$ul(style = "font-size:16px;",
+                  tags$li("Salwa Nur Rizki Putri (1314624018)"),
+                  tags$li("Rizki Annisa (1314624051)"),
+                  tags$li("Adiana Vania Rahmadani (1314624043)"),
+                  tags$li("Aufar Radifan (1314624044)"),
+                  tags$li("Maulana Fahnur (1314624053)"),
+                  tags$li("Raihan Khalish Darmawan (1314624073)")
+          )
+      )
+    ),
+    fluidRow(
+      box(title = "            Landasan Teori: Simple Moving Average (SMA)", width = 12, status = "warning", solidHeader = TRUE,
+          div(class = "teks-teori",
+              p("Metode ", strong("Simple Moving Average (SMA)"), " adalah teknik peramalan deret waktu yang paling fundamental. Metode ini bekerja dengan cara menghitung nilai rata-rata dari sejumlah observasi masa lalu yang telah ditentukan (disebut sebagai orde atau panjang jendela)."),
+              p("Setiap kali data baru muncul, rata-rata ini akan 'bergerak' dengan membuang data yang paling lama dan memasukkan data yang paling baru. Tujuannya adalah untuk menghaluskan fluktuasi acak (noise) agar tren asli dari data dapat terlihat lebih jelas."),
+              h5(strong("Formulasi Matematis:")),
+              p("Jika Y(t) adalah nilai observasi pada waktu ke-t, dan k adalah panjang orde yang dipilih, maka nilai pemulusan Moving Average (SMA(t)) dirumuskan sebagai:"),
+              p("$$SMA_t = \\frac{Y_t + Y_{t-1} + Y_{t-2} + \\dots + Y_{t-k+1}}{k} = \\frac{1}{k} \\sum_{i=0}^{k-1} Y_{t-i}$$"),
+              h5(strong("Kelebihan & Kekurangan:")),
+              tags$ul(
+                tags$li(strong("Kelebihan:"), " Sangat mudah dipahami, diimplementasikan, dan efektif meredam kejutan data jangka pendek."),
+                tags$li(strong("Kekurangan:"), " Bersifat tertinggal (lagging) terhadap tren yang sedang berlangsung, dan hasil peramalan ke masa depan (forecasting) hanya berupa garis lurus mendatar sebesar nilai rata-rata terakhir.")
+              )
+          )
+      )
+    )
+  )
+}
+
+# ############################################################
 # FUNGSI UI & SERVER — RIZKI (Tab Informasi Dataset)
 # ui_dataset_sidebar(), ui_dataset(),server_dataset()
 # ############################################################
