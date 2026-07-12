@@ -211,3 +211,80 @@ server_peramalan <- function(input, output, session, data_proses) {
   
   return(data_final_ma)   #JANGAN DIHAPUS
 }
+# ############################################################
+# UI UTAMA & SERVER UTAMA — RAIHAN
+# HANYA RAIHAN YANG BOLEH EDIT BAGIAN INI (integrasi & layout global)
+# ############################################################
+ui <- dashboardPage(
+  skin = "red",
+  dashboardHeader(title = "Simple Moving Average", titleWidth = 350),
+  
+  dashboardSidebar(width = 350,
+                   sidebarMenu(
+                     menuItem("Beranda", tabName = "home", icon = icon("home")),
+                     menuItem("Informasi Dataset", tabName = "dataset", icon = icon("database")),
+                     menuItem("Eksplorasi Tren", tabName = "eksplorasi", icon = icon("chart-line")),
+                     menuItem("Peramalan MA", tabName = "peramalan", icon = icon("calculator")),
+                     menuItem("Diagnostik Model", tabName = "diagnostik", icon = icon("book-open"))
+                   ),
+                   hr(),
+                   ui_dataset_sidebar()
+  ),
+  
+  dashboardBody(
+    withMathJax(),
+    tags$head(
+      tags$style(HTML("
+        .content-wrapper {
+          background-image: url('https://images.unsplash.com/photo-1550895030-823330fc2551?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+          background-size: cover;
+          background-attachment: fixed;
+          background-repeat: no-repeat;
+          background-position: center center;
+        }
+        .box {
+          border-radius: 10px;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+          background-color: rgba(255, 255, 255, 0.90) !important;
+        }
+        .skin-red .main-sidebar { background-color: #2c3e50; }
+        .skin-red .sidebar-menu > li.active > a,
+        .skin-red .sidebar-menu > li:hover > a {
+          background-color: #e67e22 !important;
+          color: #fff;
+          border-left-color: #f39c12;
+        }
+        .skin-red .main-header .navbar { background-color: #e74c3c !important; }
+        .skin-red .main-header .logo { background-color: #c0392b !important; color: white !important; }
+        .skin-red .main-header .logo:hover { background-color: #e74c3c !important; }
+        .kotak-input-kustom {
+          background-color: rgba(230, 126, 34, 0.2) !important;
+          border-top: 3px solid #e67e22 !important;
+          border-radius: 8px;
+        }
+        .kotak-input-kustom .box-header {
+          background-color: #e67e22 !important;
+          color: white !important;
+        }
+        .teks-teori { font-size: 16px; line-height: 1.6; text-align: justify; }
+      "))
+    ),
+    tabItems(
+      tabItem(tabName = "home",       ui_beranda()),
+      tabItem(tabName = "dataset",    ui_dataset()),
+      tabItem(tabName = "eksplorasi", ui_eksplorasi()),
+      tabItem(tabName = "peramalan",  ui_peramalan()),
+      tabItem(tabName = "diagnostik", ui_diagnostik())
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  data_proses   <- server_dataset(input, output, session)
+  server_eksplorasi(input, output, session, data_proses)
+  data_final_ma <- server_peramalan(input, output, session, data_proses)
+  server_diagnostik(input, output, session, data_final_ma)
+}
+
+shinyApp(ui = ui, server = server)
+
