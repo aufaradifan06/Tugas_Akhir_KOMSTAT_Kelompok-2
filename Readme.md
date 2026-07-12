@@ -40,14 +40,15 @@ shiny::runApp("app.R")
 ```
 
 ## 🌿 Alur Kerja Git (Branching — Kerja Bergiliran)
-Karena kode berada dalam **satu file**, setiap anggota mengerjakan bagiannya **secara bergiliran** (bukan bersamaan) untuk menghindari konflik. Urutan dan langkah lengkap ada di `ALUR_SATU_FILE.md`.
+Karena kode berada dalam **satu file**, setiap anggota mengerjakan bagiannya **secara bergiliran** (bukan bersamaan) untuk menghindari konflik.
 
-Ringkasnya:
-1. Tarik versi terbaru dari `main` sebelum mulai: `git pull origin main`
-2. Edit **hanya bagian dengan komentar nama sendiri** di `app.R`
-3. Commit & push ke branch sendiri
-4. Ajukan Pull Request ke `main`, lalu merge
-5. Anggota berikutnya baru mulai setelah PR sebelumnya di-merge
+Alur lengkapnya:
+1. Sebelum mulai Lakukan: `git clone "link github nya"` (cukup sekali aja)
+2. Pindah	ke	Branch	Milik	Sendiri: `git	checkout	nama-branch nya`
+3. Tarik	Update	Terbaru	dari	main: `git	pull	origin	main`
+4. Edit **hanya bagian dengan komentar nama sendiri** di `app.R`
+5. Save file yang sudah diedit kemudian add dan Commit: `git	add	app.R` dan `git	commit	-m	"Menambahkan	bagian	[nama	tab]	-	Nama"`
+6. Push ke branch sendiri sesuai nama: `git	push	origin	nama-branch nya`
+7. Ajukan Pull Request ke `main`, lalu merge
+8. Anggota berikutnya baru mulai setelah Pull Request sebelumnya selesai di-merge
 
-## 📄 Lisensi
-Proyek ini dibuat untuk keperluan akademik, Program Studi Statistika, Universitas Negeri Jakarta.
