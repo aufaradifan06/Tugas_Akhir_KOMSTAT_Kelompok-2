@@ -1,13 +1,6 @@
 # ============================================================
 # APLIKASI PERAMALAN SIMPLE MOVING AVERAGE (SMA)
 # Tugas Akhir Komputasi Statistika — Kelompok 2
-# Versi: SATU FILE, terbagi jadi FUNGSI TERPISAH per anggota
-#
-# ATURAN PENTING:
-# - Setiap orang HANYA boleh mengedit fungsi dengan namanya sendiri
-# - JANGAN mengedit fungsi milik orang lain
-# - JANGAN mengedit bagian "UI UTAMA" dan "SERVER UTAMA" di paling
-#   bawah file ini (itu tanggung jawab Raihan)
 # ============================================================
 
 library(shiny)
@@ -19,109 +12,17 @@ library(forecast)
 library(tseries)
 library(DT)
 
-# ==========================================
-# DATA DEFAULT (AirPassengers) — jangan diubah siapa pun
-# ==========================================
+# ============
+# DATA DEFAULT 
+# ============
 data_default <- data.frame(
   Waktu = as.numeric(time(AirPassengers)),
   Bulan = format(as.Date(time(AirPassengers)), "%b-%Y"),
   Penumpang = as.vector(AirPassengers)
 )
 
-
 # ############################################################
-# FUNGSI UI & SERVER — RIZKI (Tab Informasi Dataset)
-# ui_dataset_sidebar(), ui_dataset(),server_dataset()
-# ############################################################
-ui_dataset_sidebar <- function() {
-  box(
-    title = "📁 Input Data Anda", width = 12, solidHeader = TRUE,
-    class = "kotak-input-kustom",
-    fileInput("file_user", "Upload File CSV:", accept = c(".csv")),
-    checkboxInput("header_csv", "Baris Pertama adalah Header", TRUE),
-    uiOutput("pilih_kolom_x"),
-    uiOutput("pilih_kolom_y")
-  )
-}
-
-ui_dataset <- function() {
-  fluidRow(
-    box(title = "Informasi & Tampilan Data", width = 12, status = "danger", solidHeader = TRUE,
-        p("Gunakan menu di sebelah kiri untuk mengunggah dataset CSV Anda sendiri. Jika kosong, sistem akan menggunakan data default maskapai penerbangan."),
-        hr(),
-        DTOutput("tabel_asli")
-    )
-  )
-}
-
-# Fungsi ini mengembalikan (return) reactive data_proses,
-# karena dipake oleh fungsi Adiana & Aufar di bawah
-# JANGAN ubah nama fungsi ini atau apa yang di-return
-server_dataset <- function(input, output, session) {
-  data_aktif <- reactive({
-    if (is.null(input$file_user)) return(data_default)
-    read.csv(input$file_user$datapath, header = input$header_csv, stringsAsFactors = FALSE)
-  })
-  
-  output$pilih_kolom_x <- renderUI({
-    selectInput("kolom_x", "Pilih Kolom Waktu/Bulan:", choices = colnames(data_aktif()), selected = colnames(data_aktif())[1])
-  })
-  
-  output$pilih_kolom_y <- renderUI({
-    selectInput("kolom_y", "Pilih Kolom Nilai (Y):", choices = colnames(data_aktif()), selected = colnames(data_aktif())[3])
-  })
-  
-  data_proses <- reactive({
-    req(input$kolom_x, input$kolom_y)
-    df <- data_aktif()
-    data.frame(
-      Waktu = 1:nrow(df),
-      Label_Waktu = as.character(df[[input$kolom_x]]),
-      Penumpang = as.numeric(gsub(",", "", df[[input$kolom_y]]))
-    )
-  })
-  
-  output$tabel_asli <- renderDT({ data_proses()[, c("Label_Waktu", "Penumpang")] }, options = list(pageLength = 5))
-  
-  return(data_proses)   #JANGAN DIHAPUS
-}
-
-# ############################################################
-# FUNGSI UI & SERVER — ADIANA (Tab Eksplorasi Tren)
-# HANYA EDIT DI DALAM ui_eksplorasi() DAN server_eksplorasi() INI SAJA
-# ############################################################
-ui_eksplorasi <- function() {
-  tagList(
-    fluidRow(
-      box(title = "Visualisasi Tren Pertumbuhan Data Aktual", width = 12, status = "warning", solidHeader = TRUE,
-          plotOutput("plot_asli")
-      )
-    ),
-    fluidRow(
-      box(title = "Ringkasan Statistik Deskriptif", width = 12, status = "danger", solidHeader = TRUE,
-          verbatimTextOutput("summary_stat")
-      )
-    )
-  )
-}
-
-# Parameter data_proses dikirim dari server_dataset() milik Rizki — jangan diubah urutan/nama parameter
-server_eksplorasi <- function(input, output, session, data_proses) {
-  output$summary_stat <- renderPrint({ summary(data_proses()$Penumpang) })
-  
-  output$plot_asli <- renderPlot({
-    df <- data_proses()
-    ggplot(df, aes(x = Waktu, y = Penumpang)) +
-      geom_line(color = "#e67e22", size = 1) +
-      geom_point(color = "#c0392b", size = 2) +
-      scale_x_continuous(breaks = seq(1, nrow(df), length.out = 10), labels = df$Label_Waktu[seq(1, nrow(df), length.out = 10)]) +
-      theme_minimal(base_size = 14) +
-      labs(x = "Periode Waktu", y = "Nilai Aktual")
-  })
-}
-
-# ############################################################
-# FUNGSI UI MODUL — SALWA (Tab Beranda)
+# FUNGSI UI — SALWA (Tab Beranda)
 # ############################################################
 ui_beranda <- function() {
   tagList(
@@ -144,7 +45,7 @@ ui_beranda <- function() {
       )
     ),
     fluidRow(
-      box(title = "             Landasan Teori: Simple Moving Average (SMA)", width = 12, status = "warning", solidHeader = TRUE,
+      box(title = "            Landasan Teori: Simple Moving Average (SMA)", width = 12, status = "warning", solidHeader = TRUE,
           div(class = "teks-teori",
               p("Metode ", strong("Simple Moving Average (SMA)"), " adalah teknik peramalan deret waktu yang paling fundamental. Metode ini bekerja dengan cara menghitung nilai rata-rata dari sejumlah observasi masa lalu yang telah ditentukan (disebut sebagai orde atau panjang jendela)."),
               p("Setiap kali data baru muncul, rata-rata ini akan 'bergerak' dengan membuang data yang paling lama dan memasukkan data yang paling baru. Tujuannya adalah untuk menghaluskan fluktuasi acak (noise) agar tren asli dari data dapat terlihat lebih jelas."),
@@ -187,9 +88,6 @@ ui_dataset <- function() {
   )
 }
 
-# Fungsi ini mengembalikan (return) reactive data_proses,
-# karena dipake oleh fungsi Adiana & Aufar di bawah
-# JANGAN ubah nama fungsi ini atau apa yang di-return
 server_dataset <- function(input, output, session) {
   data_aktif <- reactive({
     if (is.null(input$file_user)) return(data_default)
@@ -216,12 +114,11 @@ server_dataset <- function(input, output, session) {
   
   output$tabel_asli <- renderDT({ data_proses()[, c("Label_Waktu", "Penumpang")] }, options = list(pageLength = 5))
   
-  return(data_proses)   #JANGAN DIHAPUS
+  return(data_proses)  
 }
 
 # ############################################################
 # FUNGSI UI & SERVER — ADIANA (Tab Eksplorasi Tren)
-# HANYA EDIT DI DALAM ui_eksplorasi() DAN server_eksplorasi() INI SAJA
 # ############################################################
 ui_eksplorasi <- function() {
   tagList(
@@ -238,7 +135,6 @@ ui_eksplorasi <- function() {
   )
 }
 
-# Parameter data_proses dikirim dari server_dataset() milik Rizki — jangan diubah urutan/nama parameter
 server_eksplorasi <- function(input, output, session, data_proses) {
   output$summary_stat <- renderPrint({ summary(data_proses()$Penumpang) })
   
@@ -283,9 +179,6 @@ ui_peramalan <- function() {
     )
   )
 }
-
-#parameter data_proses dari server_dataset() rizki.
-#fungsi ini mengembalikan reactive data_final_ma, dipakai fungsi maulana.
 server_peramalan <- function(input, output, session, data_proses) {
   data_final_ma <- reactive({
     df <- data_proses()
@@ -343,7 +236,7 @@ server_peramalan <- function(input, output, session, data_proses) {
   
   output$tabel_hasil <- renderDT({ data_final_ma()[, c("Label_Waktu", "Penumpang", "MA_Hasil")] }, options = list(pageLength = 5))
   
-  return(data_final_ma)   #JANGAN DIHAPUS
+  return(data_final_ma)   
 }
 # ############################################################
 # FUNGSI UI & SERVER — MAULANA (Tab Diagnostik Model)
@@ -368,7 +261,7 @@ ui_diagnostik <- function() {
   )
 }
 
-# Parameter data_final_ma dari server_peramalan() milik Aufar — jangan ubah nama/urutan parameter
+
 server_diagnostik <- function(input, output, session, data_final_ma) {
   residual_data <- reactive({
     df <- subset(data_final_ma(), !is.na(Penumpang))
@@ -414,7 +307,6 @@ server_diagnostik <- function(input, output, session, data_final_ma) {
 }
 # ############################################################
 # UI UTAMA & SERVER UTAMA — RAIHAN
-# HANYA RAIHAN YANG BOLEH EDIT BAGIAN INI (integrasi & layout global)
 # ############################################################
 ui <- dashboardPage(
   skin = "red",
