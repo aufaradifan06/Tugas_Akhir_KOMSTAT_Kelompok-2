@@ -1,6 +1,13 @@
 # ============================================================
 # APLIKASI PERAMALAN SIMPLE MOVING AVERAGE (SMA)
 # Tugas Akhir Komputasi Statistika — Kelompok 2
+# Versi: SATU FILE, terbagi jadi FUNGSI TERPISAH per anggota
+#
+# ATURAN PENTING:
+# - Setiap orang HANYA boleh mengedit fungsi dengan namanya sendiri
+# - JANGAN mengedit fungsi milik orang lain
+# - JANGAN mengedit bagian "UI UTAMA" dan "SERVER UTAMA" di paling
+#   bawah file ini (itu tanggung jawab Raihan)
 # ============================================================
 
 library(shiny)
@@ -12,56 +19,14 @@ library(forecast)
 library(tseries)
 library(DT)
 
-# ============
-# DATA DEFAULT 
-# ============
+# ==========================================
+# DATA DEFAULT (AirPassengers) — jangan diubah siapa pun
+# ==========================================
 data_default <- data.frame(
   Waktu = as.numeric(time(AirPassengers)),
   Bulan = format(as.Date(time(AirPassengers)), "%b-%Y"),
   Penumpang = as.vector(AirPassengers)
 )
-
-# ############################################################
-# FUNGSI UI — SALWA (Tab Beranda)
-# ############################################################
-ui_beranda <- function() {
-  tagList(
-    fluidRow(
-      box(title = "       Selamat Datang      ", width = 12, status = "danger", solidHeader = TRUE,
-          h3(strong("Aplikasi Peramalan Menggunakan Simple Moving Average (SMA)"),
-             style = "text-align:center; color:#c0392b;"),
-          p("Aplikasi interaktif ini dikembangkan untuk memenuhi Tugas Akhir Mata Kuliah Komputasi Statistika. Aplikasi ini memungkinkan pengguna untuk melakukan analisis tren dan peramalan data deret waktu secara real-time.",
-            style = "text-align:center; font-size:16px;"),
-          hr(),
-          h4(icon("users", class = "text-danger"), strong("Anggota Tim:")),
-          tags$ul(style = "font-size:16px;",
-                  tags$li("Salwa Nur Rizki Putri (1314624018)"),
-                  tags$li("Rizki Annisa (1314624051)"),
-                  tags$li("Adiana Vania Rahmadani (1314624043)"),
-                  tags$li("Aufar Radifan (1314624044)"),
-                  tags$li("Maulana Fahnur (1314624053)"),
-                  tags$li("Raihan Khalish Darmawan (1314624073)")
-          )
-      )
-    ),
-    fluidRow(
-      box(title = "            Landasan Teori: Simple Moving Average (SMA)", width = 12, status = "warning", solidHeader = TRUE,
-          div(class = "teks-teori",
-              p("Metode ", strong("Simple Moving Average (SMA)"), " adalah teknik peramalan deret waktu yang paling fundamental. Metode ini bekerja dengan cara menghitung nilai rata-rata dari sejumlah observasi masa lalu yang telah ditentukan (disebut sebagai orde atau panjang jendela)."),
-              p("Setiap kali data baru muncul, rata-rata ini akan 'bergerak' dengan membuang data yang paling lama dan memasukkan data yang paling baru. Tujuannya adalah untuk menghaluskan fluktuasi acak (noise) agar tren asli dari data dapat terlihat lebih jelas."),
-              h5(strong("Formulasi Matematis:")),
-              p("Jika Y(t) adalah nilai observasi pada waktu ke-t, dan k adalah panjang orde yang dipilih, maka nilai pemulusan Moving Average (SMA(t)) dirumuskan sebagai:"),
-              p("$$SMA_t = \\frac{Y_t + Y_{t-1} + Y_{t-2} + \\dots + Y_{t-k+1}}{k} = \\frac{1}{k} \\sum_{i=0}^{k-1} Y_{t-i}$$"),
-              h5(strong("Kelebihan & Kekurangan:")),
-              tags$ul(
-                tags$li(strong("Kelebihan:"), " Sangat mudah dipahami, diimplementasikan, dan efektif meredam kejutan data jangka pendek."),
-                tags$li(strong("Kekurangan:"), " Bersifat tertinggal (lagging) terhadap tren yang sedang berlangsung, dan hasil peramalan ke masa depan (forecasting) hanya berupa garis lurus mendatar sebesar nilai rata-rata terakhir.")
-              )
-          )
-      )
-    )
-  )
-}
 
 # ############################################################
 # FUNGSI UI & SERVER — RIZKI (Tab Informasi Dataset)
@@ -88,6 +53,9 @@ ui_dataset <- function() {
   )
 }
 
+# Fungsi ini mengembalikan (return) reactive data_proses,
+# karena dipake oleh fungsi Adiana & Aufar di bawah
+# JANGAN ubah nama fungsi ini atau apa yang di-return
 server_dataset <- function(input, output, session) {
   data_aktif <- reactive({
     if (is.null(input$file_user)) return(data_default)
@@ -114,11 +82,12 @@ server_dataset <- function(input, output, session) {
   
   output$tabel_asli <- renderDT({ data_proses()[, c("Label_Waktu", "Penumpang")] }, options = list(pageLength = 5))
   
-  return(data_proses)  
+  return(data_proses)   #JANGAN DIHAPUS
 }
 
 # ############################################################
 # FUNGSI UI & SERVER — ADIANA (Tab Eksplorasi Tren)
+# HANYA EDIT DI DALAM ui_eksplorasi() DAN server_eksplorasi() INI SAJA
 # ############################################################
 ui_eksplorasi <- function() {
   tagList(
@@ -135,6 +104,7 @@ ui_eksplorasi <- function() {
   )
 }
 
+# Parameter data_proses dikirim dari server_dataset() milik Rizki — jangan diubah urutan/nama parameter
 server_eksplorasi <- function(input, output, session, data_proses) {
   output$summary_stat <- renderPrint({ summary(data_proses()$Penumpang) })
   
@@ -179,6 +149,9 @@ ui_peramalan <- function() {
     )
   )
 }
+
+#parameter data_proses dari server_dataset() rizki.
+#fungsi ini mengembalikan reactive data_final_ma, dipakai fungsi maulana.
 server_peramalan <- function(input, output, session, data_proses) {
   data_final_ma <- reactive({
     df <- data_proses()
@@ -236,7 +209,7 @@ server_peramalan <- function(input, output, session, data_proses) {
   
   output$tabel_hasil <- renderDT({ data_final_ma()[, c("Label_Waktu", "Penumpang", "MA_Hasil")] }, options = list(pageLength = 5))
   
-  return(data_final_ma)   
+  return(data_final_ma)   #JANGAN DIHAPUS
 }
 # ############################################################
 # FUNGSI UI & SERVER — MAULANA (Tab Diagnostik Model)
@@ -261,7 +234,7 @@ ui_diagnostik <- function() {
   )
 }
 
-
+# Parameter data_final_ma dari server_peramalan() milik Aufar — jangan ubah nama/urutan parameter
 server_diagnostik <- function(input, output, session, data_final_ma) {
   residual_data <- reactive({
     df <- subset(data_final_ma(), !is.na(Penumpang))
@@ -307,6 +280,7 @@ server_diagnostik <- function(input, output, session, data_final_ma) {
 }
 # ############################################################
 # UI UTAMA & SERVER UTAMA — RAIHAN
+# HANYA RAIHAN YANG BOLEH EDIT BAGIAN INI (integrasi & layout global)
 # ############################################################
 ui <- dashboardPage(
   skin = "red",
